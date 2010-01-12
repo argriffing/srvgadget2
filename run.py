@@ -25,14 +25,30 @@ class MyForm(object):
         arr.append('<html><body>')
         arr.append('<code>')
         for m in self.modules:
+            name = m.__name__
             link = '[<a href="%s">cgi</a>]' % m.__name__
+            doc = '[<a href="doc/%s-pysrc.html">src</a>]' % m.__name__
+            arr.append(name)
             arr.append(link)
+            arr.append(doc)
             arr.append(m.MyForm.__doc__)
             arr.append('<br />')
         arr.append('</code>')
         arr.append('</body></html>')
         return '\n'.join(arr)
 
+def get_static_conf():
+    current_directory = os.path.abspath(os.curdir)
+    doc_directory = os.path.join(current_directory, 'html')
+    conf = {'/doc': {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': doc_directory}}
+    return conf
+
+def create_documentation():
+    epy_source = os.path.join(g_script_directory, '*.py')
+    epy_cmd = ' '.join(['epydoc', epy_source])
+    os.system(epy_cmd)
 
 def main(args):
     cherrypy.config.update({
@@ -40,18 +56,16 @@ def main(args):
         'server.socket_port': args.port})
     myform = MyForm()
     module_names = []
-    modules = []
     for filename in os.listdir(g_script_directory):
         if filename.startswith('gadget_'):
             module_name, extension = os.path.splitext(filename)
             if extension == '.py':
                 module_names.append(module_name)
-                module = __import__(module_name)
-                modules.append(module)
-    for module in modules:
-        print 'gadget form docstring:', module.MyForm.__doc__
+    for module_name in sorted(module_names):
+        module = __import__(module_name)
         myform.add_module(module)
-    cherrypy.quickstart(myform)
+    create_documentation()
+    cherrypy.quickstart(myform, '/', config=get_static_conf())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
