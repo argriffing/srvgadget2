@@ -50,7 +50,7 @@ def create_documentation():
     pynames = [f for f in os.listdir(g_script_directory) if f.endswith('.py')]
     pypaths = [os.path.abspath(f) for f in pynames]
     cmd = ['epydoc'] + pypaths
-    subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
+    subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()
 
 def main(args):
     cherrypy.config.update({
