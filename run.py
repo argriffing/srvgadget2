@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 import argparse
 import cherrypy
@@ -46,9 +47,10 @@ def get_static_conf():
     return conf
 
 def create_documentation():
-    epy_source = os.path.join(g_script_directory, '*.py')
-    epy_cmd = ' '.join(['epydoc', epy_source])
-    os.system(epy_cmd)
+    pynames = [f for f in os.listdir(g_script_directory) if f.endswith('.py')]
+    pypaths = [os.path.abspath(f) for f in pynames]
+    cmd = ['epydoc'] + pypaths
+    subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
 
 def main(args):
     cherrypy.config.update({
